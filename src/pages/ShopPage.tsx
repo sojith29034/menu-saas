@@ -50,6 +50,9 @@ function ShopPage() {
     { key: 'reviews', icon: Star, url: shop.social.reviews },
   ].filter(social => social.url);
 
+  console.log('Shop data:', shop);
+  console.log('Menu data:', shop.menu);
+
   return (
     <div className={`min-h-screen bg-gradient-to-b ${theme.background}`}>
       <div className="max-w-2xl mx-auto px-4 py-8">
@@ -145,7 +148,7 @@ function ShopPage() {
                 borderColor: theme.primary,
                 backgroundColor: 'white',
                 color: theme.text,
-                focusRing: theme.primary 
+                focusRingColor: theme.primary
               }}
             />
             <Search 
@@ -157,7 +160,7 @@ function ShopPage() {
           {Object.entries(shop.menu).map(([category, items]) => (
             <MenuSection 
               key={category} 
-              category={category} 
+              categoryName={category} 
               items={items}
               theme={theme}
               searchTerm={searchTerm}

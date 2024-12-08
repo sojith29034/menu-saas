@@ -11,10 +11,11 @@ const menuItemSchema = new mongoose.Schema({
   },
   price: {
     type: Number,
-    required: true,
+    required: false,
   },
   imageUrl: {
     type: String,
+    required: false,
   }
 });
 
@@ -73,7 +74,7 @@ const shopSchema = new mongoose.Schema({
   },
   imageUrl: {
     type: String,
-    required: true,
+    required: false,
   },
   hours: {
     type: String,
@@ -106,7 +107,7 @@ const shopSchema = new mongoose.Schema({
   menu: {
     type: Map,
     of: [menuItemSchema],
-    required: true,
+    default: new Map(),
   },
   slug: {
     type: String,

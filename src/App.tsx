@@ -7,7 +7,7 @@ import LandingPage from './pages/LandingPage';
 import ShopsPage from './pages/ShopsPage';
 import ShopPage from './pages/ShopPage';
 import LoginPage from './pages/LoginPage';
-import AdminPage from './pages/AdminPage';
+// import AdminPage from './pages/AdminPage';
 import ShopFormPage from './pages/ShopFormPage';
 import NotFoundPage from './pages/NotFoundPage';
 
