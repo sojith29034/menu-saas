@@ -50,12 +50,17 @@ function ShopPage() {
     { key: 'reviews', icon: Star, url: shop.social.reviews },
   ].filter(social => social.url);
 
-  console.log('Shop data:', shop);
-  console.log('Menu data:', shop.menu);
+  // Convert menu data to array format if it's not already
+  const menuCategories = Array.isArray(shop.menu) 
+    ? shop.menu 
+    : Object.entries(shop.menu).map(([categoryName, items]) => ({
+        categoryName,
+        items: Array.isArray(items) ? items : []
+      }));
 
   return (
     <div className={`min-h-screen bg-gradient-to-b ${theme.background}`}>
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="max-w-3xl mx-auto px-4 py-8">
         {/* Header Section */}
         <div className="text-center mb-8">
           <div className="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden shadow-lg ring-4" style={{ borderColor: theme.primary }}>
@@ -132,8 +137,8 @@ function ShopPage() {
           )}
         </div>
 
-        {/* Menu Preview */}
-        <div id="menu" className="rounded-2xl shadow-lg p-8 mb-8" style={{ backgroundColor: theme.secondary }}>
+        {/* Menu Section */}
+        <div id="menu" className="mt-12">
           <h2 className="text-3xl font-bold mb-8 text-center" style={{ color: theme.primary }}>Our Menu</h2>
           
           {/* Search Bar */}
@@ -143,12 +148,11 @@ function ShopPage() {
               placeholder="Search menu..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 pl-10 rounded-lg border focus:outline-none focus:ring-2 transition-all"
+              className="w-full px-4 py-3 pl-10 rounded-lg border focus:outline-none focus:ring-2 transition-all"
               style={{ 
-                borderColor: theme.primary,
+                borderColor: `${theme.primary}40`,
                 backgroundColor: 'white',
                 color: theme.text,
-                focusRingColor: theme.primary
               }}
             />
             <Search 
@@ -157,21 +161,24 @@ function ShopPage() {
             />
           </div>
 
-          {Object.entries(shop.menu).map(([category, items]) => (
-            <MenuSection 
-              key={category} 
-              categoryName={category} 
-              items={items}
-              theme={theme}
-              searchTerm={searchTerm}
-              defaultExpanded={true}
-            />
-          ))}
+          {/* Menu Categories */}
+          <div className="space-y-6">
+            {menuCategories.map((category, index) => (
+              <MenuSection
+                key={`${category.categoryName}-${index}`}
+                category={category.categoryName}
+                items={category.items}
+                theme={theme}
+                searchTerm={searchTerm}
+                defaultExpanded={true}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Footer */}
         <footer className="text-center mt-12 pb-8">
-          <p style={{ color: theme.text }}>© 2024 {shop.name}. All rights reserved.</p>
+          <p style={{ color: theme.text }}>© {new Date().getFullYear()} {shop.name}. All rights reserved.</p>
         </footer>
       </div>
     </div>
