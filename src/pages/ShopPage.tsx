@@ -22,9 +22,9 @@ import LinkButton from '../components/LinkButton';
 import TikTokIcon from '../components/icons/TikTokIcon';
 
 function ShopPage() {
-  const { shopId } = useParams();
-  const { getShopById } = useShop();
-  const shop = shopId ? getShopById(shopId) : undefined;
+  const { shopName } = useParams();
+  const { getShopByName } = useShop();
+  const shop = shopName ? getShopByName(shopName) : undefined;
   const [searchTerm, setSearchTerm] = useState('');
 
   if (!shop) {

@@ -36,7 +36,7 @@ const ShopsPage = () => {
           {filteredShops.map((shop) => (
             <Link
               key={shop._id}
-              to={`/shop/${shop._id}`}
+              to={`/${shop.name.replace(/\s+/g, '-').toLowerCase()}`}
               className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden group"
             >
               <div className="aspect-w-16 aspect-h-9">

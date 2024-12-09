@@ -9,6 +9,7 @@ interface ShopContextType {
   createShop: (data: ShopFormData) => Promise<void>;
   updateShop: (id: string, data: ShopFormData) => Promise<void>;
   deleteShop: (id: string) => Promise<void>;
+  getShopByName: (name: string) => ShopFormData | undefined;
 }
 
 const ShopContext = createContext<ShopContextType | undefined>(undefined);
@@ -135,6 +136,10 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const getShopByName = (name: string): ShopFormData | undefined => {
+    return shops.find(shop => shop.name.replace(/\s+/g, '-').toLowerCase() === name);
+  };
+
   const value = {
     shops,
     loading,
@@ -143,6 +148,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     createShop,
     updateShop,
     deleteShop,
+    getShopByName,
   };
 
   return (
