@@ -84,7 +84,7 @@ const MenuSection: React.FC<MenuSectionProps> = ({
               </div>
               {item.price && (
                 <div className="ml-4 text-lg font-medium" style={{ color: theme.accent }}>
-                  ${item.price.toFixed(2)}
+                  ₹{item.price.toFixed(2)}
                 </div>
               )}
             </div>
