@@ -451,7 +451,7 @@ const ShopForm: React.FC<ShopFormProps> = ({ initialData, onSubmit }) => {
                     )
                   }
                   className="col-span-4 input-field"
-                  required
+                  // required
                 />
                 <input
                   type="number"

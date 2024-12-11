@@ -45,6 +45,11 @@ const createShop = asyncHandler(async (req, res) => {
     const menuData = {};
     if (Array.isArray(req.body.menu)) {
       req.body.menu.forEach(category => {
+        category.items.forEach(item => {
+          if (item.description === '') {
+            item.description = null; // Set to null if empty
+          }
+        });
         menuData[category.categoryName] = category.items;
       });
     }
@@ -94,6 +99,11 @@ const updateShop = asyncHandler(async (req, res) => {
     const menuData = {};
     if (Array.isArray(req.body.menu)) {
       req.body.menu.forEach(category => {
+        category.items.forEach(item => {
+          if (item.description === '') {
+            item.description = null; // Set to null if empty
+          }
+        });
         menuData[category.categoryName] = category.items;
       });
     }
