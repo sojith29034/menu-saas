@@ -27,6 +27,20 @@ app.use(express.json());
 // Routes
 app.use('/api/shops', shopRoutes);
 app.use('/api/users', userRoutes);
+  
+// Serve static files from the React app
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../dist')));
+
+  // This should be the last route defined
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../index.html'));
+  });
+} else {
+  app.get('*', (req, res) => {
+    res.json({ message: 'API is running...' });
+  });
+}
 
 // Error Handling
 app.use(notFound);

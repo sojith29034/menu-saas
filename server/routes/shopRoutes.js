@@ -5,7 +5,7 @@ import {
   getShopBySlug,
   createShop,
   updateShop,
-  deleteShop,
+  deleteShop,  
 } from '../controllers/shopController.js';
 
 const router = express.Router();
@@ -14,8 +14,8 @@ router.route('/')
   .get(getShops)
   .post(protect, createShop);
 
-// Slug-based route for public access
-router.get('/:slug', getShopBySlug);
+// Flexible route for public access
+router.get('/:identifier', getShopBySlug);
 
 // ID-based routes for admin operations
 router.route('/id/:id')

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { 
   Menu, 
@@ -23,13 +23,26 @@ import TikTokIcon from '../components/icons/TikTokIcon';
 
 function ShopPage() {
   const { shopName } = useParams();
-  const { getShopByName } = useShop();
+  const { shops, getShopByName } = useShop();
+  
+  useEffect(() => {
+    console.log('Current Shops:', shops);
+    console.log('Searching for Shop Name:', shopName);
+  }, [shops, shopName]);
+  
   const shop = shopName ? getShopByName(shopName) : undefined;
-  const [searchTerm, setSearchTerm] = useState('');
-
+  
+  useEffect(() => {
+    console.log('Shop Name:', shopName);
+    console.log('Matched Shop:', shop);
+  }, [shopName, shop]);
+  
   if (!shop) {
+    console.error(`No shop found for name: ${shopName}`);
     return <Navigate to="/404" replace />;
   }
+  
+  const [searchTerm, setSearchTerm] = useState('');
 
   const theme = shop.theme || {
     primary: '#4A5568',
@@ -178,7 +191,7 @@ function ShopPage() {
 
         {/* Footer */}
         <footer className="text-center mt-12 pb-8">
-          <p style={{ color: theme.text }}>© {new Date().getFullYear()} {shop.name}. All rights reserved.</p>
+          <p style={{ color: theme.text }}> {new Date().getFullYear()} {shop.name}. All rights reserved.</p>
         </footer>
       </div>
     </div>

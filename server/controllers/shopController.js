@@ -21,7 +21,13 @@ const getShops = asyncHandler(async (req, res) => {
 // @route   GET /api/shops/:slug
 // @access  Public
 const getShopBySlug = asyncHandler(async (req, res) => {
-  const shop = await Shop.findOne({ slug: req.params.slug });
+  const normalizedSlug = req.params.slug
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  let shop = await Shop.findOne({ slug: normalizedSlug });
   
   if (shop) {
     res.json(shop);
@@ -36,37 +42,22 @@ const getShopBySlug = asyncHandler(async (req, res) => {
 // @access  Private
 const createShop = asyncHandler(async (req, res) => {
   try {
-    console.log('=== Starting Shop Creation ===');
-    
-    // Generate slug from name
-    const slug = req.body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    
-    // Convert menu array to proper format
-    const menuData = {};
-    if (Array.isArray(req.body.menu)) {
-      req.body.menu.forEach(category => {
-        category.items.forEach(item => {
-          if (item.description === '') {
-            item.description = null; // Set to null if empty
-          }
-        });
-        menuData[category.categoryName] = category.items;
-      });
-    }
+    const slug = req.body.name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')   // Replace non-alphanumeric with dash
+      .replace(/^-+|-+$/g, '');       // Remove leading/trailing dashes
 
     const shopData = {
       user: req.user._id,
       ...req.body,
       slug,
-      menu: menuData
+      menu: req.body.menu
     };
-
-    console.log('Creating shop with data:', JSON.stringify(shopData, null, 2));
 
     const shop = new Shop(shopData);
     const createdShop = await shop.save();
     
-    console.log('Shop created successfully:', createdShop);
     res.status(201).json(createdShop);
   } catch (error) {
     console.error('❌ Error creating shop:', error);

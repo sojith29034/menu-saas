@@ -137,7 +137,20 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   };
 
   const getShopByName = (name: string): ShopFormData | undefined => {
-    return shops.find(shop => shop.name.replace(/\s+/g, '-').toLowerCase() === name);
+    const normalizedSlug = name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  
+    console.log('Looking for shop with slug:', normalizedSlug);
+  
+    const matchedShop = shops.find(shop => 
+      shop.slug === normalizedSlug
+    );
+  
+    console.log('Matched Shop:', matchedShop);
+    return matchedShop;
   };
 
   const value = {

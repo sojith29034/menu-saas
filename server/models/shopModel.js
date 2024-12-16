@@ -124,10 +124,14 @@ shopSchema.pre('save', function(next) {
     next();
     return;
   }
-  this.slug = this.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  // More robust slug generation
+  this.slug = this.name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')   // Replace non-alphanumeric with dash
+    .replace(/^-+|-+$/g, '');       // Remove leading/trailing dashes
   next();
 });
-
 // Add method to convert menu Map to array format for frontend
 shopSchema.methods.toJSON = function() {
   const obj = this.toObject();

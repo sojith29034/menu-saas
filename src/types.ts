@@ -25,6 +25,7 @@ export interface Social {
 }
 
 export interface ShopFormData {
+  slug: any;
   _id?: string;
   name: string;
   description: string;
@@ -41,3 +42,5 @@ export interface ShopFormData {
     items: MenuItem[];
   }>;
 }
+
+
