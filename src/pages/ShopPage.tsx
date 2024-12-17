@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { 
   Menu, 
@@ -24,7 +24,8 @@ import TikTokIcon from '../components/icons/TikTokIcon';
 function ShopPage() {
   const { shopName } = useParams();
   const { shops, getShopByName } = useShop();
-  
+  const [searchTerm, setSearchTerm] = useState('');
+
   useEffect(() => {
     console.log('Current Shops:', shops);
     console.log('Searching for Shop Name:', shopName);
@@ -41,16 +42,9 @@ function ShopPage() {
     console.error(`No shop found for name: ${shopName}`);
     return <Navigate to="/404" replace />;
   }
-  
-  const [searchTerm, setSearchTerm] = useState('');
 
-  const theme = shop.theme || {
-    primary: '#4A5568',
-    secondary: '#F7FAFC',
-    accent: '#ED8936',
-    background: 'from-gray-50 to-gray-100',
-    text: '#2D3748'
-  };
+
+  const theme = shop.theme;
 
   const socialIcons = [
     { key: 'instagram', icon: Instagram, url: shop.social.instagram },
