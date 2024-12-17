@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ShopFormData } from '../types';
 
 interface ShopContextType {
@@ -9,52 +9,67 @@ interface ShopContextType {
   createShop: (data: ShopFormData) => Promise<void>;
   updateShop: (id: string, data: ShopFormData) => Promise<void>;
   deleteShop: (id: string) => Promise<void>;
-  getShopByName: (name: string) => ShopFormData | undefined;
+  getShopBySlug: (name: string) => ShopFormData | undefined;
+  fetchShops: (slug: string) => Promise<ShopFormData | null>;
 }
 
-const ShopContext = createContext<ShopContextType | undefined>(undefined);
+const defaultContextValue: ShopContextType = {
+  shops: [],
+  loading: false,
+  error: null,
+  getShopById: () => undefined,
+  createShop: async () => {},
+  updateShop: async () => {},
+  deleteShop: async () => {},
+  getShopBySlug: () => undefined,
+  fetchShops: async () => null,
+};
+
+const ShopContext = createContext<ShopContextType>(defaultContextValue);
 
 export function ShopProvider({ children }: { children: ReactNode }) {
   const [shops, setShops] = useState<ShopFormData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchShops = async () => {
+    
+  const fetchShops = async (slug?: string): Promise<ShopFormData[] | ShopFormData | null> => {
     try {
-      setLoading(true);
-      const response = await fetch('/api/shops');
-      if (!response.ok) {
-        throw new Error('Failed to fetch shops');
+      // Avoid re-fetching shops if they are already loaded
+      if (!slug && shops.length > 0) {
+        console.log('Shops already fetched, returning existing data.');
+        return shops; // Return the existing shops data
       }
+  
+      const endpoint = slug ? `/api/shops/${slug}` : `/api/shops`;
+      const response = await fetch(endpoint);
+  
+      if (!response.ok) throw new Error('Failed to fetch shop data');
+  
       const data = await response.json();
-      setShops(data);
-    } catch (err) {
-      console.error('Error fetching shops:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch shops');
-    } finally {
-      setLoading(false);
+  
+      if (slug) {
+        return data as ShopFormData; // Single shop
+      } else {
+        setShops(data as ShopFormData[]); // Update the global shops state
+        return data as ShopFormData[];
+      }
+    } catch (error) {
+      console.error('Error fetching shops:', error);
+      return null;
     }
   };
+  
+  
+  
+  
 
   useEffect(() => {
     fetchShops();
   }, []);
 
-  // Implement getShopById function
   const getShopById = (id: string): ShopFormData | undefined => {
-    const shop = shops.find(shop => shop._id === id);
-    if (!shop) return undefined;
-
-    // Convert menu from array to object format if needed
-    return {
-      ...shop,
-      menu: Array.isArray(shop.menu) 
-        ? shop.menu 
-        : Object.entries(shop.menu).map(([categoryName, items]) => ({
-            categoryName,
-            items: Array.isArray(items) ? items : []
-          }))
-    };
+    return shops.find(shop => shop._id === id);
   };
 
   const createShop = async (shopData: ShopFormData) => {
@@ -75,10 +90,10 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         throw new Error(errorData.message || 'Failed to create shop');
       }
 
-      await fetchShops();
+      setShops((prevShops) => [...prevShops, shopData]);
     } catch (err) {
       console.error('Error creating shop:', err);
-      throw err;
+      setError(err instanceof Error ? err.message : 'Failed to create shop');
     } finally {
       setLoading(false);
     }
@@ -102,10 +117,12 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         throw new Error(errorData.message || 'Failed to update shop');
       }
 
-      await fetchShops();
+      setShops((prevShops) =>
+        prevShops.map((shop) => (shop._id === id ? { ...shop, ...shopData } : shop))
+      );
     } catch (err) {
       console.error('Error updating shop:', err);
-      throw err;
+      setError(err instanceof Error ? err.message : 'Failed to update shop');
     } finally {
       setLoading(false);
     }
@@ -127,16 +144,18 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         throw new Error(errorData.message || 'Failed to delete shop');
       }
 
-      await fetchShops();
+      setShops((prevShops) => prevShops.filter((shop) => shop._id !== id));
     } catch (err) {
       console.error('Error deleting shop:', err);
-      throw err;
+      setError(err instanceof Error ? err.message : 'Failed to delete shop');
     } finally {
       setLoading(false);
     }
   };
 
-  const getShopByName = (name: string): ShopFormData | undefined => {
+  const getShopBySlug = (name: string): ShopFormData | undefined => {
+    console.log('Shops after API call:', shops);
+
     const normalizedSlug = name
       .toLowerCase()
       .trim()
@@ -145,13 +164,15 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   
     console.log('Looking for shop with slug:', normalizedSlug);
   
-    const matchedShop = shops.find(shop => 
-      shop.slug === normalizedSlug
-    );
+    const matchedShop = shops.find(shop => {
+      console.log('Checking shop slug:', shop.slug);
+      return shop.slug === normalizedSlug;
+    });
   
     console.log('Matched Shop:', matchedShop);
     return matchedShop;
   };
+  
 
   const value = {
     shops,
@@ -161,14 +182,11 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     createShop,
     updateShop,
     deleteShop,
-    getShopByName,
+    getShopBySlug,
+    fetchShops,
   };
 
-  return (
-    <ShopContext.Provider value={value}>
-      {children}
-    </ShopContext.Provider>
-  );
+  return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 }
 
 export function useShop() {

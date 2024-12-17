@@ -13,7 +13,7 @@ const getShops = asyncHandler(async (req, res) => {
     res.json(shops);
   } catch (error) {
     console.error('❌ Error fetching shops:', error);
-    throw error;
+    res.status(500).json({ message: 'Error fetching shops', error: error.message });
   }
 });
 
@@ -27,13 +27,17 @@ const getShopBySlug = asyncHandler(async (req, res) => {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-  let shop = await Shop.findOne({ slug: normalizedSlug });
-  
-  if (shop) {
-    res.json(shop);
-  } else {
-    res.status(404);
-    throw new Error('Shop not found');
+  try {
+    let shop = await Shop.findOne({ slug: normalizedSlug });
+    
+    if (shop) {
+      res.json(shop);
+    } else {
+      res.status(404).json({ message: 'Shop not found' });
+    }
+  } catch (error) {
+    console.error('❌ Error fetching shop:', error);
+    res.status(500).json({ message: 'Error fetching shop', error: error.message });
   }
 });
 
@@ -45,23 +49,29 @@ const createShop = asyncHandler(async (req, res) => {
     const slug = req.body.name
       .toLowerCase()
       .trim()
-      .replace(/[^a-z0-9]+/g, '-')   // Replace non-alphanumeric with dash
-      .replace(/^-+|-+$/g, '');       // Remove leading/trailing dashes
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, ''); // Slug generation
+
+    // Check if slug already exists, if so append a number
+    let existingShop = await Shop.findOne({ slug });
+    if (existingShop) {
+      slug += `-${Date.now()}`;  // Append unique identifier
+    }
 
     const shopData = {
       user: req.user._id,
       ...req.body,
       slug,
-      menu: req.body.menu
+      menu: req.body.menu,
     };
 
     const shop = new Shop(shopData);
     const createdShop = await shop.save();
-    
+
     res.status(201).json(createdShop);
   } catch (error) {
     console.error('❌ Error creating shop:', error);
-    throw error;
+    res.status(500).json({ message: 'Error creating shop', error: error.message });
   }
 });
 
@@ -73,27 +83,27 @@ const updateShop = asyncHandler(async (req, res) => {
     const shop = await Shop.findById(req.params.id);
 
     if (!shop) {
-      res.status(404);
-      throw new Error('Shop not found');
+      res.status(404).json({ message: 'Shop not found' });
+      return;
     }
 
     // Check authorization
     if (shop.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
-      res.status(401);
-      throw new Error('Not authorized');
+      res.status(401).json({ message: 'Not authorized' });
+      return;
     }
 
     // Generate new slug if name is changed
-    const slug = req.body.name ? req.body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : shop.slug;
+    const slug = req.body.name
+      ? req.body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+      : shop.slug;
 
-    // Convert menu array to proper format
+    // Convert menu array to proper format and validate
     const menuData = {};
     if (Array.isArray(req.body.menu)) {
       req.body.menu.forEach(category => {
         category.items.forEach(item => {
-          if (item.description === '') {
-            item.description = null; // Set to null if empty
-          }
+          if (item.description === '') item.description = null; // Set to null if empty
         });
         menuData[category.categoryName] = category.items;
       });
@@ -102,19 +112,15 @@ const updateShop = asyncHandler(async (req, res) => {
     const updatedData = {
       ...req.body,
       slug,
-      menu: menuData
+      menu: menuData,
     };
 
-    const updatedShop = await Shop.findByIdAndUpdate(
-      req.params.id,
-      updatedData,
-      { new: true, runValidators: true }
-    );
+    const updatedShop = await Shop.findByIdAndUpdate(req.params.id, updatedData, { new: true, runValidators: true });
 
     res.json(updatedShop);
   } catch (error) {
     console.error('❌ Error updating shop:', error);
-    throw error;
+    res.status(500).json({ message: 'Error updating shop', error: error.message });
   }
 });
 
@@ -126,20 +132,20 @@ const deleteShop = asyncHandler(async (req, res) => {
     const shop = await Shop.findById(req.params.id);
 
     if (!shop) {
-      res.status(404);
-      throw new Error('Shop not found');
+      res.status(404).json({ message: 'Shop not found' });
+      return;
     }
 
     if (shop.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
-      res.status(401);
-      throw new Error('Not authorized');
+      res.status(401).json({ message: 'Not authorized' });
+      return;
     }
 
     await shop.deleteOne();
     res.json({ message: 'Shop removed' });
   } catch (error) {
     console.error('❌ Error deleting shop:', error);
-    throw error;
+    res.status(500).json({ message: 'Error deleting shop', error: error.message });
   }
 });
 

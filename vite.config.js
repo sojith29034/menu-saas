@@ -10,8 +10,5 @@ export default defineConfig({
         changeOrigin: true,
       }
     },
-    historyApiFallback: {
-      disableDotRule: true
-    }
   }
 })
